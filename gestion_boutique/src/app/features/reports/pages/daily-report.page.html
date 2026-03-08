@@ -1,0 +1,41 @@
+<div class="space-y-6">
+  <h1 class="text-2xl font-bold text-gray-900">Rapport quotidien</h1>
+
+  <div *ngIf="isLoading" class="flex justify-center py-12">
+    <app-loading-spinner [size]="50" message="Chargement..."></app-loading-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && summary" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 bg-green-50 rounded-lg">
+        <h3 class="text-sm font-medium text-gray-600 mb-2">Revenus totaux</h3>
+        <p class="text-2xl font-bold text-green-600">{{ summary.totalRevenue | currencyFormat }}</p>
+      </div>
+      <div class="p-4 bg-red-50 rounded-lg">
+        <h3 class="text-sm font-medium text-gray-600 mb-2">Dépenses totales</h3>
+        <p class="text-2xl font-bold text-red-600">{{ summary.totalExpenses | currencyFormat }}</p>
+      </div>
+      <div class="p-4 bg-blue-50 rounded-lg">
+        <h3 class="text-sm font-medium text-gray-600 mb-2">Bénéfice net</h3>
+        <p class="text-2xl font-bold" [class.text-green-600]="summary.netProfit >= 0" [class.text-red-600]="summary.netProfit < 0">
+          {{ summary.netProfit | currencyFormat }}
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t pt-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Marge bénéficiaire</h3>
+      <div class="flex items-center space-x-4">
+        <div class="flex-1 bg-gray-200 rounded-full h-4">
+          <div
+            class="h-4 rounded-full"
+            [class.bg-green-500]="summary.profitMargin >= 0"
+            [class.bg-red-500]="summary.profitMargin < 0"
+            [style.width.%]="Math.abs(summary.profitMargin)">
+          </div>
+        </div>
+        <span class="text-lg font-semibold">{{ summary.profitMargin.toFixed(2) }}%</span>
+      </div>
+    </div>
+  </div>
+</div>

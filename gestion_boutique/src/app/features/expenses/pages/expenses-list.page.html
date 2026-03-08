@@ -1,0 +1,126 @@
+<div class="max-w-5xl mx-auto pb-20 px-6 animate-fade-in">
+  
+  <!-- Header Minimaliste -->
+  <div class="flex flex-col md:flex-row justify-between items-baseline mb-12 gap-6">
+    <div>
+      <h1 class="text-4xl font-black tracking-tight text-gray-900 mb-1">Journal de Caisse</h1>
+      <p class="text-xs font-bold text-gray-400 uppercase tracking-[0.3em]">Maison Mode &bull; Archives de Trésorerie</p>
+    </div>
+    <button routerLink="/expenses/new" class="group flex items-center space-x-3 px-6 py-3 bg-gray-900 text-white rounded-full hover:bg-black transition-all active:scale-95 shadow-lg">
+      <span class="text-[10px] font-black tracking-widest">NOUVELLE ÉCRITURE</span>
+      <i class="fas fa-plus text-xs group-hover:rotate-90 transition-transform duration-300"></i>
+    </button>
+  </div>
+
+  <!-- Board de Statistiques Épuré -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+    <div class="border-l-2 border-gray-100 pl-6 py-2">
+      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Journée</p>
+      <p class="text-2xl font-bold text-gray-900">{{ todayTotal() | currencyFormat }}</p>
+    </div>
+    <div class="border-l-2 border-gray-100 pl-6 py-2">
+      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Hebdomadaire</p>
+      <p class="text-2xl font-bold text-gray-900">{{ weekTotal() | currencyFormat }}</p>
+    </div>
+    <div class="border-l-2 border-gray-100 pl-6 py-2">
+      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Mensuel</p>
+      <p class="text-2xl font-bold text-gray-900">{{ monthTotal() | currencyFormat }}</p>
+    </div>
+  </div>
+
+  <!-- Liste Haute Précision -->
+  <div class="space-y-1">
+    <div class="hidden md:grid grid-cols-12 gap-4 px-8 py-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">
+      <div class="col-span-2">Date d'opération</div>
+      <div class="col-span-5">Désignation des dépenses</div>
+      <div class="col-span-2">Montant (FG)</div>
+      <div class="col-span-2 text-center">Statut & Mode</div>
+      <div class="col-span-1 text-right">Action</div>
+    </div>
+
+    <div *ngIf="isLoading()" class="py-20 text-center">
+      <app-loading-spinner [size]="40"></app-loading-spinner>
+    </div>
+
+    @for (expense of expenses(); track expense.id) {
+      <div class="group relative bg-white border border-gray-100 md:border-transparent md:hover:border-gray-200 md:hover:bg-gray-50/50 rounded-2xl md:rounded-none transition-all duration-200">
+        
+        <!-- Ligne Principale -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center px-6 md:px-8 py-6 md:py-5">
+          
+          <div class="col-span-2 flex items-center md:block space-x-3 md:space-x-0">
+            <div class="md:hidden w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center text-white text-[10px]">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <span class="text-[11px] font-black text-gray-400 uppercase">{{ formatDate(expense.date) }}</span>
+          </div>
+
+          <div class="col-span-5">
+            <h3 class="text-sm font-bold text-gray-800 leading-tight">{{ expense.description | slice:0:50 }}{{ expense.description.length > 50 ? '...' : '' }}</h3>
+          </div>
+
+          <div class="col-span-2">
+            <span class="text-base font-black text-gray-900">-{{ expense.amount | currencyFormat }}</span>
+          </div>
+
+          <div class="col-span-2 flex md:justify-center items-center space-x-3">
+            <span class="px-3 py-1 bg-gray-100 text-gray-500 text-[9px] font-black uppercase rounded-full tracking-tighter">
+              {{ getPaymentLabel(expense.paymentMethod) }}
+            </span>
+            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full" title="Validé"></div>
+          </div>
+
+          <div class="col-span-1 flex justify-end items-center space-x-2">
+            <button (click)="toggleExpand(expense.id!)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-gray-400">
+              <i class="fas" [class.fa-plus-circle]="expandedId() !== expense.id" [class.fa-minus-circle]="expandedId() === expense.id"></i>
+            </button>
+            <button (click)="deleteExpense(expense)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 hover:text-red-600 transition-colors text-gray-300">
+              <i class="fas fa-trash-alt text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Détails Déroulants (Sleek Drawer) -->
+        <div *ngIf="expandedId() === expense.id" class="px-8 pb-8 pt-2 animate-fade-in-up">
+          <div class="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="space-y-4">
+                <div>
+                  <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Note Complète</p>
+                  <p class="text-sm text-gray-600 font-medium leading-relaxed">{{ expense.description }}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Fournisseur</p>
+                  <p class="text-xs font-bold text-gray-900">{{ expense.supplier || 'NON SPÉCIFIÉ' }}</p>
+                </div>
+                <div>
+                  <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">N° Référence</p>
+                  <p class="text-xs font-bold text-gray-900">{{ expense.reference || 'AUCUNE' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Séparateur discret pour desktop -->
+        <div class="hidden md:block absolute bottom-0 left-8 right-8 h-[1px] bg-gray-50"></div>
+      </div>
+    }
+
+    @empty {
+      <div class="py-20 text-center border-2 border-dashed border-gray-100 rounded-[32px]">
+        <p class="text-gray-400 font-bold text-sm">Aucune donnée de trésorerie disponible.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Pagination Minimaliste -->
+  <div *ngIf="expenses().length > 0" class="mt-12 flex justify-center">
+    <button class="px-8 py-3 border border-gray-200 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:border-gray-900 hover:text-gray-900 transition-all">
+      Afficher les archives plus anciennes
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,217 @@
+<div class="dashboard-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Chargement de vos données...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && stats()" class="content-wrapper" [@fadeIn]>
+    <!-- Header Section -->
+    <header class="dashboard-header animate-slide-down">
+      <div class="header-content">
+        <div class="greeting">
+          <h1 class="title">
+            <span class="wave-emoji">👋</span> Bonjour !
+          </h1>
+          <p class="subtitle">Voici le résumé de votre activité</p>
+        </div>
+        <div class="header-actions">
+          <a routerLink="/expenses/new" class="btn-action btn-expense">
+            <i class="fas fa-minus-circle"></i>
+            <span>Dépense</span>
+          </a>
+          <a routerLink="/sales/new" class="btn-action btn-sale">
+            <i class="fas fa-plus-circle"></i>
+            <span>Vente</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Alert Banner -->
+    <div *ngIf="lowStockProducts().length > 0" class="alert-banner animate-slide-down" style="animation-delay: 0.1s">
+      <div class="alert-icon pulse">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="alert-content">
+        <strong>{{ lowStockProducts().length }} produit(s)</strong> en stock critique
+        <div class="alert-tags">
+          @for (product of lowStockProducts().slice(0, 3); track product.id) {
+            <span class="alert-tag">{{ product.name }}</span>
+          }
+          <a *ngIf="lowStockProducts().length > 3" routerLink="/inventory/stock" class="alert-more">
+            +{{ lowStockProducts().length - 3 }} autres
+          </a>
+        </div>
+      </div>
+      <a routerLink="/inventory/stock" class="alert-action">
+        Gérer <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <!-- Main Stats Section -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <!-- Today Card -->
+        <div class="stat-card stat-card-today animate-fade-up" style="animation-delay: 0.15s">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-sun"></i>
+            </div>
+            <span class="stat-period">Aujourd'hui</span>
+          </div>
+          <div class="stat-body">
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-green"></span>
+                Ventes
+              </div>
+              <span class="stat-value stat-value-green">{{ stats()!.today.sales | currencyFormat }}</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-red"></span>
+                Dépenses
+              </div>
+              <span class="stat-value stat-value-red">{{ stats()!.today.expenses | currencyFormat }}</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-profit">
+              <span class="profit-label">Bénéfice</span>
+              <span class="profit-value" [class.positive]="stats()!.today.profit >= 0" [class.negative]="stats()!.today.profit < 0">
+                {{ stats()!.today.profit | currencyFormat }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week Card -->
+        <div class="stat-card stat-card-week animate-fade-up" style="animation-delay: 0.25s">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-calendar-week"></i>
+            </div>
+            <span class="stat-period">Cette semaine</span>
+          </div>
+          <div class="stat-body">
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-green"></span>
+                Ventes
+              </div>
+              <span class="stat-value stat-value-green">{{ stats()!.week.sales | currencyFormat }}</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-red"></span>
+                Dépenses
+              </div>
+              <span class="stat-value stat-value-red">{{ stats()!.week.expenses | currencyFormat }}</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-profit">
+              <span class="profit-label">Bénéfice</span>
+              <span class="profit-value" [class.positive]="stats()!.week.profit >= 0" [class.negative]="stats()!.week.profit < 0">
+                {{ stats()!.week.profit | currencyFormat }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Month Card -->
+        <div class="stat-card stat-card-month animate-fade-up" style="animation-delay: 0.35s">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <span class="stat-period">Ce mois</span>
+          </div>
+          <div class="stat-body">
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-green"></span>
+                Ventes
+              </div>
+              <span class="stat-value stat-value-green">{{ stats()!.month.sales | currencyFormat }}</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat-label">
+                <span class="dot dot-red"></span>
+                Dépenses
+              </div>
+              <span class="stat-value stat-value-red">{{ stats()!.month.expenses | currencyFormat }}</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-profit">
+              <span class="profit-label">Bénéfice</span>
+              <span class="profit-value" [class.positive]="stats()!.month.profit >= 0" [class.negative]="stats()!.month.profit < 0">
+                {{ stats()!.month.profit | currencyFormat }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions animate-fade-up" style="animation-delay: 0.4s">
+      <h2 class="section-title">
+        <i class="fas fa-bolt"></i>
+        Actions rapides
+      </h2>
+      <div class="actions-grid">
+        <a routerLink="/sales/new" class="action-card action-sale">
+          <div class="action-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <span class="action-label">Nouvelle vente</span>
+          <div class="action-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </a>
+        <a routerLink="/expenses/new" class="action-card action-expense">
+          <div class="action-icon">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <span class="action-label">Nouvelle dépense</span>
+          <div class="action-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </a>
+        <a routerLink="/inventory/stock" class="action-card action-stock">
+          <div class="action-icon">
+            <i class="fas fa-boxes-stacked"></i>
+          </div>
+          <span class="action-label">Gérer le stock</span>
+          <div class="action-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Secondary Actions -->
+    <section class="secondary-actions animate-fade-up" style="animation-delay: 0.5s">
+      <div class="secondary-grid">
+        <a routerLink="/inventory/products/new" class="secondary-card">
+          <i class="fas fa-plus-circle"></i>
+          <span>Nouveau produit</span>
+        </a>
+        <a routerLink="/sales" class="secondary-card">
+          <i class="fas fa-receipt"></i>
+          <span>Historique ventes</span>
+        </a>
+        <a routerLink="/expenses" class="secondary-card">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Historique dépenses</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="w-full max-w-[480px] mx-auto p-6">
+  
+  <!-- Logo Section -->
+  <div class="text-center mb-12 animate-fade-in-down">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-[22px] shadow-2xl mb-6 transform hover:scale-105 transition-all duration-500">
+      <i class="fas fa-tshirt text-white text-xl"></i>
+    </div>
+    <h1 class="text-3xl font-black tracking-[-0.05em] text-gray-900 mb-1 uppercase">MAISON MODE</h1>
+    <div class="flex items-center justify-center space-x-2">
+      <div class="h-[1.5px] w-4 bg-emerald-500 rounded-full"></div>
+      <span class="text-[10px] font-black tracking-[0.3em] text-gray-400 uppercase">Management Studio</span>
+      <div class="h-[1.5px] w-4 bg-emerald-500 rounded-full"></div>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white rounded-[40px] p-10 md:p-12 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.06)] border border-gray-50 animate-fade-in-up">
+    
+    <div class="mb-10 text-center">
+      <h2 class="text-2xl font-bold text-gray-900 leading-tight">Nouvel Accès</h2>
+      <p class="text-gray-400 text-sm font-medium mt-1">Enregistrez-vous pour piloter votre maison.</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <!-- Nom Complet -->
+      <div class="space-y-2 group">
+        <label for="displayName" class="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1 group-focus-within:text-emerald-600 transition-colors">Nom du Propriétaire</label>
+        <div class="relative">
+          <input
+            id="displayName"
+            type="text"
+            formControlName="displayName"
+            class="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[24px] focus:bg-white focus:border-gray-900 transition-all text-gray-900 font-bold placeholder:text-gray-300 outline-none"
+            placeholder="Ex: Robert Sagno">
+          <div class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-gray-900 transition-colors">
+            <i class="fas fa-user-tie"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-2 group">
+        <label for="email" class="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1 group-focus-within:text-emerald-600 transition-colors">Adresse Email</label>
+        <div class="relative">
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[24px] focus:bg-white focus:border-gray-900 transition-all text-gray-900 font-bold placeholder:text-gray-300 outline-none"
+            placeholder="robert@maisonmode.com">
+          <div class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-gray-900 transition-colors">
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2 group">
+          <label for="password" class="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1 group-focus-within:text-emerald-600 transition-colors">Clé d'Accès</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            class="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[24px] focus:bg-white focus:border-gray-900 transition-all text-gray-900 font-bold placeholder:text-gray-300 outline-none"
+            placeholder="••••••••">
+        </div>
+        <div class="space-y-2 group">
+          <label for="confirmPassword" class="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1 group-focus-within:text-emerald-600 transition-colors">Confirmation</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            class="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-[24px] focus:bg-white focus:border-gray-900 transition-all text-gray-900 font-bold placeholder:text-gray-300 outline-none"
+            placeholder="••••••••">
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="p-4 bg-red-50 border border-red-100 rounded-[20px] animate-shake">
+        <p class="text-[11px] text-red-600 font-black text-center uppercase tracking-tight">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="registerForm.invalid || isLoading"
+        class="w-full py-6 bg-gray-900 hover:bg-black disabled:bg-gray-100 disabled:text-gray-300 text-white font-black text-xs rounded-[24px] shadow-2xl shadow-gray-200 active:scale-[0.98] transition-all duration-300 flex items-center justify-center space-x-3 mt-4 tracking-[0.2em]">
+        <span *ngIf="!isLoading">CRÉER LE COMPTE ELITE</span>
+        <app-loading-spinner *ngIf="isLoading" [size]="20" message=""></app-loading-spinner>
+      </button>
+    </form>
+
+    <div class="mt-12 pt-8 border-t border-gray-50 text-center">
+      <p class="text-gray-400 text-[11px] font-bold tracking-tight">
+        DÉJÀ PARMI NOUS ?
+        <a routerLink="/auth/login" class="text-emerald-600 hover:text-emerald-700 transition-colors ml-1 font-black">SE CONNECTER</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="mt-12 text-center opacity-40">
+    <p class="text-[9px] font-black text-gray-400 tracking-[0.4em] uppercase leading-relaxed">
+      Institutional Quality Infrastructure<br>
+      &copy; 2026 MAISON MODE STUDIO
+    </p>
+  </div>
+
+</div>
