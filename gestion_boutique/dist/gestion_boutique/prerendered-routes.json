@@ -1,0 +1,20 @@
+{
+  "routes": {
+    "/": {},
+    "/auth": {},
+    "/auth/login": {},
+    "/auth/register": {},
+    "/dashboard": {},
+    "/expenses": {},
+    "/expenses/new": {},
+    "/inventory": {},
+    "/inventory/products": {},
+    "/inventory/stock": {},
+    "/reports": {},
+    "/reports/daily": {},
+    "/sales": {},
+    "/sales/new": {},
+    "/workers": {},
+    "/workers/new": {}
+  }
+}
