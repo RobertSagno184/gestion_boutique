@@ -18,6 +18,6 @@ export default `<!doctype html>
 </script>
   <app-root></app-root>
   <noscript>Veuillez activer JavaScript pour utiliser cette application.</noscript>
-<link rel="modulepreload" href="chunk-R7ZSKI34.js"><link rel="modulepreload" href="chunk-PZ4K66BN.js"><link rel="modulepreload" href="chunk-W3VQ2BP4.js"><script src="polyfills-B6TNHZQ6.js" type="module"></script><script src="main-274X53OS.js" type="module"></script></body>
+<link rel="modulepreload" href="chunk-LE66W4KC.js"><link rel="modulepreload" href="chunk-JKDUHJOI.js"><link rel="modulepreload" href="chunk-BFBBDHR4.js"><script src="polyfills-B6TNHZQ6.js" type="module"></script><script src="main-YA2ED2AK.js" type="module"></script></body>
 </html>
 `;
