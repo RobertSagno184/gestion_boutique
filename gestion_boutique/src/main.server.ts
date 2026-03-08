@@ -1,8 +1,17 @@
-import { bootstrapApplication } from '@angular/platform-browser';
+import { ApplicationConfig, Provider, EnvironmentProviders } from '@angular/core';
+import { bootstrapApplication, BootstrapContext } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { config } from './app/app.config.server';
 
-// Accept the server BootstrapContext and forward it to bootstrapApplication
-const bootstrap = (context: any) => bootstrapApplication(AppComponent, config, context);
+const bootstrap = (context: BootstrapContext, options?: { providers?: (Provider | EnvironmentProviders)[] }) => {
+  const configWithContext: ApplicationConfig = {
+    ...config,
+    providers: [
+      ...(config.providers || []),
+      ...(options?.providers || [])
+    ]
+  };
+  return bootstrapApplication(AppComponent, configWithContext, context);
+};
 
 export default bootstrap;
