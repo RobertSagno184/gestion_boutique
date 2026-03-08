@@ -35,210 +35,203 @@ const PAYMENT_TYPES = [
           <p class="text-sm text-gray-500">{{ worker()?.role }}</p>
         </div>
       </div>
-
-      <div *ngIf="isLoading()" class="flex justify-center py-12">
-        <app-loading-spinner [size]="50" message="Chargement..."></app-loading-spinner>
-      </div>
-
-      <div *ngIf="!isLoading() && worker()" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Worker Info Card -->
-        <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
-          <div class="flex items-center space-x-4 mb-6">
-            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <i class="fas fa-user text-3xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold">{{ worker()!.firstName }} {{ worker()!.lastName }}</h2>
-              <p class="text-purple-200">{{ worker()!.role }}</p>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white/10 rounded-lg p-4">
-              <p class="text-purple-200 text-sm">Salaire mensuel</p>
-              <p class="text-2xl font-bold">
-                {{ worker()!.monthlySalary || 0 | currencyFormat }}
-              </p>
-            </div>
-            <div class="bg-white/10 rounded-lg p-4">
-              <p class="text-purple-200 text-sm">Total payé ce mois</p>
-              <p class="text-2xl font-bold">{{ monthlyPaid() | currencyFormat }}</p>
-            </div>
-          </div>
-
-          <div class="mt-4 p-4 bg-white/10 rounded-lg">
-            <div class="flex items-center justify-between">
-              <span class="text-purple-200">Solde restant</span>
-              <span class="text-xl font-bold" [class.text-green-300]="remainingBalance() >= 0" [class.text-red-300]="remainingBalance() < 0">
-                {{ remainingBalance() | currencyFormat }}
-              </span>
-            </div>
-          </div>
+    
+      @if (isLoading()) {
+        <div class="flex justify-center py-12">
+          <app-loading-spinner [size]="50" message="Chargement..."></app-loading-spinner>
         </div>
-
-        <!-- Payment Form -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <i class="fas fa-plus-circle text-green-500 mr-2"></i>
-            Nouveau paiement
-          </h3>
-
-          <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <!-- Payment Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3">Type de paiement</label>
-              <div class="grid grid-cols-3 gap-2">
-                @for (type of paymentTypes; track type.value) {
-                  <button
-                    type="button"
-                    (click)="selectPaymentType(type.value)"
-                    [class.ring-2]="selectedPaymentType() === type.value"
-                    [class.ring-blue-500]="selectedPaymentType() === type.value"
-                    [class.bg-blue-50]="selectedPaymentType() === type.value"
-                    class="p-3 rounded-xl border border-gray-200 hover:border-blue-300 transition-all text-center">
-                    <i [class]="'fas ' + type.icon + ' text-' + type.color + '-600 text-xl mb-1'"></i>
-                    <span class="block text-xs font-medium text-gray-700">{{ type.label }}</span>
-                  </button>
-                }
+      }
+    
+      @if (!isLoading() && worker()) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Worker Info Card -->
+          <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
+            <div class="flex items-center space-x-4 mb-6">
+              <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-3xl"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold">{{ worker()!.firstName }} {{ worker()!.lastName }}</h2>
+                <p class="text-purple-200">{{ worker()!.role }}</p>
               </div>
             </div>
-
-            <!-- Amount -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Montant (FG) <span class="text-red-500">*</span>
-              </label>
-              <input
-                formControlName="amount"
-                type="number"
-                min="1"
-                placeholder="Ex: 50000"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-white/10 rounded-lg p-4">
+                <p class="text-purple-200 text-sm">Salaire mensuel</p>
+                <p class="text-2xl font-bold">
+                  {{ worker()!.monthlySalary || 0 | currencyFormat }}
+                </p>
+              </div>
+              <div class="bg-white/10 rounded-lg p-4">
+                <p class="text-purple-200 text-sm">Total payé ce mois</p>
+                <p class="text-2xl font-bold">{{ monthlyPaid() | currencyFormat }}</p>
+              </div>
             </div>
-
-            <!-- Quick amounts -->
-            <div class="flex flex-wrap gap-2">
-              @for (amount of quickAmounts; track amount) {
-                <button
-                  type="button"
-                  (click)="setAmount(amount)"
-                  class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
-                  {{ amount | number }} FG
-                </button>
-              }
-              <button
-                *ngIf="worker()?.monthlySalary"
-                type="button"
-                (click)="setAmount(worker()!.monthlySalary!)"
-                class="px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
-                Salaire complet
-              </button>
+            <div class="mt-4 p-4 bg-white/10 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-purple-200">Solde restant</span>
+                <span class="text-xl font-bold" [class.text-green-300]="remainingBalance() >= 0" [class.text-red-300]="remainingBalance() < 0">
+                  {{ remainingBalance() | currencyFormat }}
+                </span>
+              </div>
             </div>
-
-            <!-- Payment Method -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Mode de paiement</label>
-              <select
-                formControlName="paymentMethod"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                @for (method of paymentMethods; track method.value) {
-                  <option [value]="method.value">{{ method.label }}</option>
-                }
-              </select>
-            </div>
-
-            <!-- Date -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Date du paiement</label>
-              <input
-                formControlName="date"
-                type="date"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Note (optionnel)</label>
-              <input
-                formControlName="description"
-                type="text"
-                placeholder="Ex: Salaire mois de février"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
-            <!-- Submit -->
-            <app-button
-              type="submit"
-              [disabled]="paymentForm.invalid || isSubmitting()"
-              variant="primary"
-              size="lg"
-              [fullWidth]="true">
-              <i class="fas fa-money-bill-wave mr-2"></i>
-              {{ isSubmitting() ? 'Enregistrement...' : 'Effectuer le paiement' }}
-            </app-button>
-          </form>
-        </div>
-
-        <!-- Payment History -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <i class="fas fa-history text-purple-500 mr-2"></i>
-            Historique des paiements
-          </h3>
-
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                @for (payment of payments(); track payment.id) {
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ formatDate(payment.date) }}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                            [class.bg-blue-100]="payment.category === 'salaire'"
-                            [class.text-blue-800]="payment.category === 'salaire'"
-                            [class.bg-orange-100]="payment.category === 'avance_salaire'"
-                            [class.text-orange-800]="payment.category === 'avance_salaire'"
-                            [class.bg-green-100]="payment.category === 'bonus'"
-                            [class.text-green-800]="payment.category === 'bonus'">
-                        {{ getPaymentTypeLabel(payment.category) }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {{ payment.amount | currencyFormat }}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ getPaymentMethodLabel(payment.paymentMethod) }}
-                    </td>
-                    <td class="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">
-                      {{ payment.description || '-' }}
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="5" class="px-4 py-12 text-center text-gray-500">
-                      <i class="fas fa-receipt text-4xl text-gray-300 mb-3"></i>
-                      <p>Aucun paiement enregistré</p>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
           </div>
-        </div>
-      </div>
-    </div>
-  `,
+          <!-- Payment Form -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-plus-circle text-green-500 mr-2"></i>
+              Nouveau paiement
+            </h3>
+            <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="space-y-4">
+              <!-- Payment Type -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Type de paiement</label>
+                <div class="grid grid-cols-3 gap-2">
+                  @for (type of paymentTypes; track type.value) {
+                    <button
+                      type="button"
+                      (click)="selectPaymentType(type.value)"
+                      [class.ring-2]="selectedPaymentType() === type.value"
+                      [class.ring-blue-500]="selectedPaymentType() === type.value"
+                      [class.bg-blue-50]="selectedPaymentType() === type.value"
+                      class="p-3 rounded-xl border border-gray-200 hover:border-blue-300 transition-all text-center">
+                      <i [class]="'fas ' + type.icon + ' text-' + type.color + '-600 text-xl mb-1'"></i>
+                      <span class="block text-xs font-medium text-gray-700">{{ type.label }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+              <!-- Amount -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Montant (FG) <span class="text-red-500">*</span>
+                </label>
+                <input
+                  formControlName="amount"
+                  type="number"
+                  min="1"
+                  placeholder="Ex: 50000"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold">
+                </div>
+                <!-- Quick amounts -->
+                <div class="flex flex-wrap gap-2">
+                  @for (amount of quickAmounts; track amount) {
+                    <button
+                      type="button"
+                      (click)="setAmount(amount)"
+                      class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
+                      {{ amount | number }} FG
+                    </button>
+                  }
+                  @if (worker()?.monthlySalary) {
+                    <button
+                      type="button"
+                      (click)="setAmount(worker()!.monthlySalary!)"
+                      class="px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
+                      Salaire complet
+                    </button>
+                  }
+                </div>
+                <!-- Payment Method -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Mode de paiement</label>
+                  <select
+                    formControlName="paymentMethod"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    @for (method of paymentMethods; track method.value) {
+                      <option [value]="method.value">{{ method.label }}</option>
+                    }
+                  </select>
+                </div>
+                <!-- Date -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Date du paiement</label>
+                  <input
+                    formControlName="date"
+                    type="date"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  </div>
+                  <!-- Description -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Note (optionnel)</label>
+                    <input
+                      formControlName="description"
+                      type="text"
+                      placeholder="Ex: Salaire mois de février"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <!-- Submit -->
+                    <app-button
+                      type="submit"
+                      [disabled]="paymentForm.invalid || isSubmitting()"
+                      variant="primary"
+                      size="lg"
+                      [fullWidth]="true">
+                      <i class="fas fa-money-bill-wave mr-2"></i>
+                      {{ isSubmitting() ? 'Enregistrement...' : 'Effectuer le paiement' }}
+                    </app-button>
+                  </form>
+                </div>
+                <!-- Payment History -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-history text-purple-500 mr-2"></i>
+                    Historique des paiements
+                  </h3>
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        @for (payment of payments(); track payment.id) {
+                          <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {{ formatDate(payment.date) }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                                [class.bg-blue-100]="payment.category === 'salaire'"
+                                [class.text-blue-800]="payment.category === 'salaire'"
+                                [class.bg-orange-100]="payment.category === 'avance_salaire'"
+                                [class.text-orange-800]="payment.category === 'avance_salaire'"
+                                [class.bg-green-100]="payment.category === 'bonus'"
+                                [class.text-green-800]="payment.category === 'bonus'">
+                                {{ getPaymentTypeLabel(payment.category) }}
+                              </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                              {{ payment.amount | currencyFormat }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {{ getPaymentMethodLabel(payment.paymentMethod) }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">
+                              {{ payment.description || '-' }}
+                            </td>
+                          </tr>
+                          } @empty {
+                          <tr>
+                            <td colspan="5" class="px-4 py-12 text-center text-gray-500">
+                              <i class="fas fa-receipt text-4xl text-gray-300 mb-3"></i>
+                              <p>Aucun paiement enregistré</p>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+    `,
   styles: []
 })
 export class WorkerPaymentsPageComponent implements OnInit {

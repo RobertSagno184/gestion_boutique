@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { StockService } from '@core/services/stock.service';
@@ -32,7 +32,7 @@ const PRODUCT_UNITS = [
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, LoadingSpinnerComponent],
   templateUrl: './product-form.page.html',
   styleUrl: './product-form.page.scss'
 })

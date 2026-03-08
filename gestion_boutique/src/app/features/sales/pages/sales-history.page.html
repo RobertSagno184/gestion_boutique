@@ -60,124 +60,128 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input 
-        type="text" 
+      <input
+        type="text"
         [(ngModel)]="searchTerm"
         placeholder="Rechercher par client ou produit...">
+      </div>
+      <div class="filter-buttons">
+        <button
+          (click)="filterPeriod = 'all'"
+          [class.active]="filterPeriod === 'all'"
+          class="filter-btn">
+          Tout
+        </button>
+        <button
+          (click)="filterPeriod = 'today'"
+          [class.active]="filterPeriod === 'today'"
+          class="filter-btn">
+          Aujourd'hui
+        </button>
+        <button
+          (click)="filterPeriod = 'week'"
+          [class.active]="filterPeriod === 'week'"
+          class="filter-btn">
+          Cette semaine
+        </button>
+        <button
+          (click)="filterPeriod = 'month'"
+          [class.active]="filterPeriod === 'month'"
+          class="filter-btn">
+          Ce mois
+        </button>
+      </div>
     </div>
-    <div class="filter-buttons">
-      <button 
-        (click)="filterPeriod = 'all'"
-        [class.active]="filterPeriod === 'all'"
-        class="filter-btn">
-        Tout
-      </button>
-      <button 
-        (click)="filterPeriod = 'today'"
-        [class.active]="filterPeriod === 'today'"
-        class="filter-btn">
-        Aujourd'hui
-      </button>
-      <button 
-        (click)="filterPeriod = 'week'"
-        [class.active]="filterPeriod === 'week'"
-        class="filter-btn">
-        Cette semaine
-      </button>
-      <button 
-        (click)="filterPeriod = 'month'"
-        [class.active]="filterPeriod === 'month'"
-        class="filter-btn">
-        Ce mois
-      </button>
-    </div>
-  </div>
 
-  <!-- Loading -->
-  <div *ngIf="isLoading()" class="loading-state">
-    <div class="loading-spinner"></div>
-    <p>Chargement des ventes...</p>
-  </div>
+    <!-- Loading -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Chargement des ventes...</p>
+      </div>
+    }
 
-  <!-- Sales List -->
-  <div *ngIf="!isLoading()" class="sales-list">
-    @for (sale of filteredSales(); track sale.id; let i = $index) {
-      <div class="sale-card" [style.animation-delay]="i * 0.05 + 's'">
-        <div class="sale-header">
-          <div class="sale-date">
-            <i class="fas fa-clock"></i>
-            {{ formatDate(sale.date) }}
-          </div>
-          <div class="sale-amount">
-            {{ sale.totalAmount | currencyFormat }}
-          </div>
-        </div>
-        
-        <div class="sale-body">
-          <div class="sale-customer">
-            <div class="customer-avatar">
-              {{ getInitials(sale.customerName) }}
+    <!-- Sales List -->
+    @if (!isLoading()) {
+      <div class="sales-list">
+        @for (sale of filteredSales(); track sale.id; let i = $index) {
+          <div class="sale-card" [style.animation-delay]="i * 0.05 + 's'">
+            <div class="sale-header">
+              <div class="sale-date">
+                <i class="fas fa-clock"></i>
+                {{ formatDate(sale.date) }}
+              </div>
+              <div class="sale-amount">
+                {{ sale.totalAmount | currencyFormat }}
+              </div>
             </div>
-            <div class="customer-info">
-              <span class="customer-name">{{ sale.customerName || 'Client anonyme' }}</span>
-              <span class="customer-phone" *ngIf="sale.customerPhone">
-                <i class="fas fa-phone"></i> {{ sale.customerPhone }}
-              </span>
+            <div class="sale-body">
+              <div class="sale-customer">
+                <div class="customer-avatar">
+                  {{ getInitials(sale.customerName) }}
+                </div>
+                <div class="customer-info">
+                  <span class="customer-name">{{ sale.customerName || 'Client anonyme' }}</span>
+                  @if (sale.customerPhone) {
+                    <span class="customer-phone">
+                      <i class="fas fa-phone"></i> {{ sale.customerPhone }}
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="sale-items">
+                <div class="items-preview">
+                  @for (item of sale.items.slice(0, 2); track item.productId) {
+                    <span class="item-tag">
+                      {{ item.productName }} ×{{ item.quantity }}
+                    </span>
+                  }
+                  @if (sale.items.length > 2) {
+                    <span class="item-more">+{{ sale.items.length - 2 }}</span>
+                  }
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div class="sale-items">
-            <div class="items-preview">
-              @for (item of sale.items.slice(0, 2); track item.productId) {
-                <span class="item-tag">
-                  {{ item.productName }} ×{{ item.quantity }}
-                </span>
-              }
-              @if (sale.items.length > 2) {
-                <span class="item-more">+{{ sale.items.length - 2 }}</span>
-              }
+            <div class="sale-footer">
+              <div class="payment-badge" [class]="sale.paymentMethod">
+                <i [class]="getPaymentIcon(sale.paymentMethod)"></i>
+                {{ getPaymentMethodLabel(sale.paymentMethod) }}
+              </div>
+              <button (click)="toggleDetails(sale)" class="details-btn">
+                <i class="fas" [class.fa-chevron-down]="!expandedSales[sale.id!]" [class.fa-chevron-up]="expandedSales[sale.id!]"></i>
+                Détails
+              </button>
             </div>
-          </div>
-        </div>
-
-        <div class="sale-footer">
-          <div class="payment-badge" [class]="sale.paymentMethod">
-            <i [class]="getPaymentIcon(sale.paymentMethod)"></i>
-            {{ getPaymentMethodLabel(sale.paymentMethod) }}
-          </div>
-          <button (click)="toggleDetails(sale)" class="details-btn">
-            <i class="fas" [class.fa-chevron-down]="!expandedSales[sale.id!]" [class.fa-chevron-up]="expandedSales[sale.id!]"></i>
-            Détails
-          </button>
-        </div>
-
-        <!-- Expanded Details -->
-        <div class="sale-details" *ngIf="expandedSales[sale.id!]">
-          <h4>Articles vendus</h4>
-          <div class="details-table">
-            @for (item of sale.items; track item.productId) {
-              <div class="detail-row">
-                <span class="detail-name">{{ item.productName }}</span>
-                <span class="detail-qty">×{{ item.quantity }}</span>
-                <span class="detail-price">{{ item.unitPrice | currencyFormat }}</span>
-                <span class="detail-total">{{ item.totalPrice | currencyFormat }}</span>
+            <!-- Expanded Details -->
+            @if (expandedSales[sale.id!]) {
+              <div class="sale-details">
+                <h4>Articles vendus</h4>
+                <div class="details-table">
+                  @for (item of sale.items; track item.productId) {
+                    <div class="detail-row">
+                      <span class="detail-name">{{ item.productName }}</span>
+                      <span class="detail-qty">×{{ item.quantity }}</span>
+                      <span class="detail-price">{{ item.unitPrice | currencyFormat }}</span>
+                      <span class="detail-total">{{ item.totalPrice | currencyFormat }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             }
           </div>
-        </div>
-      </div>
-    } @empty {
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-receipt"></i>
-        </div>
-        <h3>Aucune vente</h3>
-        <p>{{ searchTerm || filterPeriod !== 'all' ? 'Aucun résultat pour cette recherche' : 'Commencez par enregistrer votre première vente' }}</p>
-        <a routerLink="/sales/new" class="empty-btn">
-          <i class="fas fa-plus"></i>
-          Nouvelle vente
-        </a>
+          } @empty {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <h3>Aucune vente</h3>
+            <p>{{ searchTerm || filterPeriod !== 'all' ? 'Aucun résultat pour cette recherche' : 'Commencez par enregistrer votre première vente' }}</p>
+            <a routerLink="/sales/new" class="empty-btn">
+              <i class="fas fa-plus"></i>
+              Nouvelle vente
+            </a>
+          </div>
+        }
       </div>
     }
   </div>
-</div>

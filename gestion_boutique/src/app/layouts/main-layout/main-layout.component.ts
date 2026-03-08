@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/layout/header/header.component';
 import { SidebarComponent } from '../../shared/components/layout/sidebar/sidebar.component';
@@ -8,7 +8,7 @@ import { MobileNavComponent } from '../../shared/components/layout/mobile-nav/mo
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent, MobileNavComponent],
+  imports: [RouterModule, HeaderComponent, SidebarComponent, MobileNavComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>

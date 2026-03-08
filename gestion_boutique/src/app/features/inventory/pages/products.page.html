@@ -33,119 +33,127 @@
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-gray-50">
-    <app-loading-spinner [size]="50" message="Consultation des stocks..."></app-loading-spinner>
-  </div>
+  @if (isLoading) {
+    <div class="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-gray-50">
+      <app-loading-spinner [size]="50" message="Consultation des stocks..."></app-loading-spinner>
+    </div>
+  }
 
   <!-- Table View (Desktop Only) -->
-  <div *ngIf="!isLoading && products.length > 0" class="hidden md:block bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up stagger-2">
-    <table class="w-full">
-      <thead class="bg-gray-50/50 border-b border-gray-50">
-        <tr>
-          <th class="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Article & Style</th>
-          <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Catégorie</th>
-          <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Finances (FG)</th>
-          <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Disponibilité</th>
-          <th class="px-8 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-50">
-        @for (product of products; track product.id) {
-          <tr class="hover:bg-gray-50/50 transition-all group">
-            <td class="px-8 py-6">
-              <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white transition-all duration-300">
-                  <i class="fas fa-tshirt"></i>
-                </div>
-                <div>
-                  <p class="text-sm font-bold text-gray-900 leading-tight">{{ product.name }}</p>
-                  <div class="flex items-center space-x-2 mt-1">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">{{ product.gender || 'Unisexe' }}</span>
-                    <span class="w-1 h-1 bg-gray-200 rounded-full"></span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">{{ product.size || 'Unique' }}</span>
+  @if (!isLoading && products.length > 0) {
+    <div class="hidden md:block bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up stagger-2">
+      <table class="w-full">
+        <thead class="bg-gray-50/50 border-b border-gray-50">
+          <tr>
+            <th class="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Article & Style</th>
+            <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Catégorie</th>
+            <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Finances (FG)</th>
+            <th class="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Disponibilité</th>
+            <th class="px-8 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          @for (product of products; track product.id) {
+            <tr class="hover:bg-gray-50/50 transition-all group">
+              <td class="px-8 py-6">
+                <div class="flex items-center space-x-4">
+                  <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-gray-900 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-tshirt"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-gray-900 leading-tight">{{ product.name }}</p>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="text-[10px] font-bold text-gray-400 uppercase">{{ product.gender || 'Unisexe' }}</span>
+                      <span class="w-1 h-1 bg-gray-200 rounded-full"></span>
+                      <span class="text-[10px] font-bold text-gray-400 uppercase">{{ product.size || 'Unique' }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </td>
-            <td class="px-6 py-6">
-              <span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-black uppercase rounded-lg border border-gray-100">{{ product.category }}</span>
-            </td>
-            <td class="px-6 py-6">
-              <div class="flex flex-col">
-                <span class="text-sm font-black text-gray-900">{{ product.price | currencyFormat }}</span>
-                <span class="text-[10px] font-bold text-emerald-500 mt-0.5">Coût: {{ product.costPrice || 0 | currencyFormat }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-6">
-              <div class="flex flex-col space-y-1">
-                <span class="text-sm font-bold" [class.text-red-600]="product.stock === 0" [class.text-amber-600]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.text-emerald-600]="product.stock > (product.minStock || 5)">
-                  {{ product.stock }} {{ product.unit }}
-                </span>
-                <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div class="h-full rounded-full" [style.width.%]="(product.stock / 50) * 100" [class.bg-red-500]="product.stock === 0" [class.bg-amber-500]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.bg-emerald-500]="product.stock > (product.minStock || 5)"></div>
+              </td>
+              <td class="px-6 py-6">
+                <span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-black uppercase rounded-lg border border-gray-100">{{ product.category }}</span>
+              </td>
+              <td class="px-6 py-6">
+                <div class="flex flex-col">
+                  <span class="text-sm font-black text-gray-900">{{ product.price | currencyFormat }}</span>
+                  <span class="text-[10px] font-bold text-emerald-500 mt-0.5">Coût: {{ product.costPrice || 0 | currencyFormat }}</span>
                 </div>
-              </div>
-            </td>
-            <td class="px-8 py-6 text-right">
-              <div class="flex items-center justify-end space-x-2">
-                <button [routerLink]="['/inventory/products', product.id]" class="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all shadow-sm">
-                  <i class="fas fa-pen text-xs"></i>
-                </button>
-                <button (click)="deleteProduct(product)" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
-                  <i class="fas fa-trash text-xs"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+              </td>
+              <td class="px-6 py-6">
+                <div class="flex flex-col space-y-1">
+                  <span class="text-sm font-bold" [class.text-red-600]="product.stock === 0" [class.text-amber-600]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.text-emerald-600]="product.stock > (product.minStock || 5)">
+                    {{ product.stock }} {{ product.unit }}
+                  </span>
+                  <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full" [style.width.%]="(product.stock / 50) * 100" [class.bg-red-500]="product.stock === 0" [class.bg-amber-500]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.bg-emerald-500]="product.stock > (product.minStock || 5)"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-8 py-6 text-right">
+                <div class="flex items-center justify-end space-x-2">
+                  <button [routerLink]="['/inventory/products', product.id]" class="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all shadow-sm">
+                    <i class="fas fa-pen text-xs"></i>
+                  </button>
+                  <button (click)="deleteProduct(product)" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                    <i class="fas fa-trash text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 
   <!-- Mobile View (Grid of Cards) -->
-  <div *ngIf="!isLoading && products.length > 0" class="md:hidden space-y-4 animate-fade-in-up stagger-2">
-    @for (product of products; track product.id) {
-      <div class="bg-white rounded-[28px] p-5 shadow-sm border border-gray-50 flex items-center space-x-4">
-        <div class="w-16 h-16 bg-gray-50 rounded-[20px] flex items-center justify-center text-gray-400 text-xl flex-shrink-0">
-          <i class="fas fa-tshirt"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex justify-between items-start">
-            <h4 class="text-sm font-bold text-gray-900 truncate pr-2">{{ product.name }}</h4>
-            <span class="text-xs font-black text-emerald-600">{{ product.price | currencyFormat }}</span>
+  @if (!isLoading && products.length > 0) {
+    <div class="md:hidden space-y-4 animate-fade-in-up stagger-2">
+      @for (product of products; track product.id) {
+        <div class="bg-white rounded-[28px] p-5 shadow-sm border border-gray-50 flex items-center space-x-4">
+          <div class="w-16 h-16 bg-gray-50 rounded-[20px] flex items-center justify-center text-gray-400 text-xl flex-shrink-0">
+            <i class="fas fa-tshirt"></i>
           </div>
-          <div class="flex items-center space-x-2 mt-1 mb-2">
-            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ product.category }}</span>
-            <span class="text-[9px] font-black text-gray-300">•</span>
-            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ product.size }}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold" [class.text-red-600]="product.stock === 0" [class.text-amber-600]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.text-emerald-600]="product.stock > (product.minStock || 5)">
-              Stock: {{ product.stock }}
-            </span>
-            <div class="flex space-x-2">
-              <button [routerLink]="['/inventory/products', product.id]" class="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-lg">
-                <i class="fas fa-pen text-[10px]"></i>
-              </button>
-              <button (click)="deleteProduct(product)" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-400 rounded-lg">
-                <i class="fas fa-trash text-[10px]"></i>
-              </button>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start">
+              <h4 class="text-sm font-bold text-gray-900 truncate pr-2">{{ product.name }}</h4>
+              <span class="text-xs font-black text-emerald-600">{{ product.price | currencyFormat }}</span>
+            </div>
+            <div class="flex items-center space-x-2 mt-1 mb-2">
+              <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ product.category }}</span>
+              <span class="text-[9px] font-black text-gray-300">•</span>
+              <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ product.size }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold" [class.text-red-600]="product.stock === 0" [class.text-amber-600]="product.stock > 0 && product.stock <= (product.minStock || 5)" [class.text-emerald-600]="product.stock > (product.minStock || 5)">
+                Stock: {{ product.stock }}
+              </span>
+              <div class="flex space-x-2">
+                <button [routerLink]="['/inventory/products', product.id]" class="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-lg">
+                  <i class="fas fa-pen text-[10px]"></i>
+                </button>
+                <button (click)="deleteProduct(product)" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-400 rounded-lg">
+                  <i class="fas fa-trash text-[10px]"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && products.length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-gray-200">
-    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 text-3xl mb-6">
-      <i class="fas fa-box-open"></i>
+  @if (!isLoading && products.length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 bg-white rounded-[32px] border border-dashed border-gray-200">
+      <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 text-3xl mb-6">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Collection Vide</h3>
+      <p class="text-sm text-gray-400 mb-8">Commencez par ajouter votre premier article de mode.</p>
+      <button routerLink="/inventory/products/new" class="px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg hover:bg-emerald-600 transition-all">
+        NOUVEL ARTICLE
+      </button>
     </div>
-    <h3 class="text-xl font-bold text-gray-900 mb-2">Collection Vide</h3>
-    <p class="text-sm text-gray-400 mb-8">Commencez par ajouter votre premier article de mode.</p>
-    <button routerLink="/inventory/products/new" class="px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg hover:bg-emerald-600 transition-all">
-      NOUVEL ARTICLE
-    </button>
-  </div>
+  }
 </div>

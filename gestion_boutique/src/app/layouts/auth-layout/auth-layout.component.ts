@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <div class="min-h-screen bg-[#fafafa] flex flex-col justify-center">
       <router-outlet></router-outlet>

@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { StockService } from '@core/services/stock.service';
@@ -11,7 +11,7 @@ import { formatDate } from '@shared/utils/formatters';
 @Component({
   selector: 'app-stock-entry',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, LoadingSpinnerComponent],
   templateUrl: './stock-entry.page.html',
   styleUrl: './stock-entry.page.scss'
 })

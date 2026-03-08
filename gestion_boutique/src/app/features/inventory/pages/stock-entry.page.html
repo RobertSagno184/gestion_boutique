@@ -74,22 +74,24 @@
         </div>
 
         <!-- Selected Product Info -->
-        <div *ngIf="selectedProduct()" class="p-4 bg-gray-50 rounded-xl">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-gray-900">{{ selectedProduct()!.name }}</p>
-              <p class="text-sm text-gray-500">{{ selectedProduct()!.category }}</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm text-gray-500">Stock actuel</p>
-              <p class="text-xl font-bold" 
-                 [class.text-green-600]="selectedProduct()!.stock > (selectedProduct()!.minStock || 0)"
-                 [class.text-red-600]="selectedProduct()!.stock <= (selectedProduct()!.minStock || 0)">
-                {{ selectedProduct()!.stock }} {{ selectedProduct()!.unit }}
-              </p>
+        @if (selectedProduct()) {
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium text-gray-900">{{ selectedProduct()!.name }}</p>
+                <p class="text-sm text-gray-500">{{ selectedProduct()!.category }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-500">Stock actuel</p>
+                <p class="text-xl font-bold"
+                  [class.text-green-600]="selectedProduct()!.stock > (selectedProduct()!.minStock || 0)"
+                  [class.text-red-600]="selectedProduct()!.stock <= (selectedProduct()!.minStock || 0)">
+                  {{ selectedProduct()!.stock }} {{ selectedProduct()!.unit }}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        }
 
         <!-- Quantity -->
         <div>
@@ -102,132 +104,140 @@
             min="1"
             placeholder="Ex: 50"
             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold">
-        </div>
-
-        <!-- Reason -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Motif <span class="text-red-500">*</span>
-          </label>
-          <select
-            formControlName="reason"
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <option value="">-- Sélectionner --</option>
-            @if (selectedType() === 'in') {
-              <option value="Réapprovisionnement">Réapprovisionnement</option>
-              <option value="Retour client">Retour client</option>
-              <option value="Don reçu">Don reçu</option>
-              <option value="Transfert entrant">Transfert entrant</option>
-            }
-            @if (selectedType() === 'out') {
-              <option value="Perte">Perte</option>
-              <option value="Périmé">Périmé</option>
-              <option value="Cassé/Endommagé">Cassé/Endommagé</option>
-              <option value="Vol">Vol</option>
-              <option value="Don">Don</option>
-              <option value="Usage interne">Usage interne</option>
-            }
-            @if (selectedType() === 'adjustment') {
-              <option value="Inventaire">Correction après inventaire</option>
-              <option value="Erreur de saisie">Correction erreur de saisie</option>
-            }
-            <option value="Autre">Autre</option>
-          </select>
-        </div>
-
-        <!-- Custom reason if "Autre" -->
-        <div *ngIf="stockForm.get('reason')?.value === 'Autre'">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Précisez le motif
-          </label>
-          <input
-            formControlName="customReason"
-            type="text"
-            placeholder="Décrivez le motif..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-        </div>
-
-        <!-- Preview -->
-        <div *ngIf="selectedProduct() && stockForm.get('quantity')?.value" 
-             class="p-4 rounded-xl"
-             [class.bg-green-50]="selectedType() === 'in'"
-             [class.border-green-200]="selectedType() === 'in'"
-             [class.bg-red-50]="selectedType() === 'out'"
-             [class.border-red-200]="selectedType() === 'out'"
-             [class.bg-blue-50]="selectedType() === 'adjustment'"
-             [class.border-blue-200]="selectedType() === 'adjustment'">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-medium">Nouveau stock après mouvement:</span>
-            <span class="text-xl font-bold">
-              {{ getNewStock() }} {{ selectedProduct()!.unit }}
-            </span>
           </div>
+
+          <!-- Reason -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Motif <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="reason"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">-- Sélectionner --</option>
+              @if (selectedType() === 'in') {
+                <option value="Réapprovisionnement">Réapprovisionnement</option>
+                <option value="Retour client">Retour client</option>
+                <option value="Don reçu">Don reçu</option>
+                <option value="Transfert entrant">Transfert entrant</option>
+              }
+              @if (selectedType() === 'out') {
+                <option value="Perte">Perte</option>
+                <option value="Périmé">Périmé</option>
+                <option value="Cassé/Endommagé">Cassé/Endommagé</option>
+                <option value="Vol">Vol</option>
+                <option value="Don">Don</option>
+                <option value="Usage interne">Usage interne</option>
+              }
+              @if (selectedType() === 'adjustment') {
+                <option value="Inventaire">Correction après inventaire</option>
+                <option value="Erreur de saisie">Correction erreur de saisie</option>
+              }
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+
+          <!-- Custom reason if "Autre" -->
+          @if (stockForm.get('reason')?.value === 'Autre') {
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Précisez le motif
+              </label>
+              <input
+                formControlName="customReason"
+                type="text"
+                placeholder="Décrivez le motif..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+            }
+
+            <!-- Preview -->
+            @if (selectedProduct() && stockForm.get('quantity')?.value) {
+              <div
+                class="p-4 rounded-xl"
+                [class.bg-green-50]="selectedType() === 'in'"
+                [class.border-green-200]="selectedType() === 'in'"
+                [class.bg-red-50]="selectedType() === 'out'"
+                [class.border-red-200]="selectedType() === 'out'"
+                [class.bg-blue-50]="selectedType() === 'adjustment'"
+                [class.border-blue-200]="selectedType() === 'adjustment'">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium">Nouveau stock après mouvement:</span>
+                  <span class="text-xl font-bold">
+                    {{ getNewStock() }} {{ selectedProduct()!.unit }}
+                  </span>
+                </div>
+              </div>
+            }
+
+            <!-- Submit -->
+            <app-button
+              type="submit"
+              [disabled]="stockForm.invalid || isSubmitting()"
+              variant="primary"
+              size="lg"
+              [fullWidth]="true">
+              <i class="fas fa-check mr-2"></i>
+              {{ isSubmitting() ? 'Enregistrement...' : 'Valider le mouvement' }}
+            </app-button>
+          </form>
         </div>
 
-        <!-- Submit -->
-        <app-button
-          type="submit"
-          [disabled]="stockForm.invalid || isSubmitting()"
-          variant="primary"
-          size="lg"
-          [fullWidth]="true">
-          <i class="fas fa-check mr-2"></i>
-          {{ isSubmitting() ? 'Enregistrement...' : 'Valider le mouvement' }}
-        </app-button>
-      </form>
-    </div>
+        <!-- Recent Movements -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-history text-purple-500 mr-2"></i>
+            Historique récent
+          </h3>
 
-    <!-- Recent Movements -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-        <i class="fas fa-history text-purple-500 mr-2"></i>
-        Historique récent
-      </h3>
-
-      <div *ngIf="isLoadingHistory()" class="flex justify-center py-8">
-        <app-loading-spinner [size]="40" message="Chargement..."></app-loading-spinner>
-      </div>
-
-      <div *ngIf="!isLoadingHistory()" class="space-y-3 max-h-[500px] overflow-y-auto">
-        @for (movement of movements(); track movement.id) {
-          <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                     [class.bg-green-100]="movement.type === 'in'"
-                     [class.bg-red-100]="movement.type === 'out'"
-                     [class.bg-blue-100]="movement.type === 'adjustment'">
-                  <i class="fas"
-                     [class.fa-arrow-down]="movement.type === 'in'"
-                     [class.text-green-600]="movement.type === 'in'"
-                     [class.fa-arrow-up]="movement.type === 'out'"
-                     [class.text-red-600]="movement.type === 'out'"
-                     [class.fa-sync-alt]="movement.type === 'adjustment'"
-                     [class.text-blue-600]="movement.type === 'adjustment'"></i>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900">{{ getProductName(movement.productId) }}</p>
-                  <p class="text-sm text-gray-500">{{ movement.reason }}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="font-bold"
-                   [class.text-green-600]="movement.type === 'in'"
-                   [class.text-red-600]="movement.type === 'out'"
-                   [class.text-blue-600]="movement.type === 'adjustment'">
-                  {{ movement.type === 'in' ? '+' : (movement.type === 'out' ? '-' : '±') }}{{ movement.quantity }}
-                </p>
-                <p class="text-xs text-gray-400">{{ formatDate(movement.date) }}</p>
-              </div>
+          @if (isLoadingHistory()) {
+            <div class="flex justify-center py-8">
+              <app-loading-spinner [size]="40" message="Chargement..."></app-loading-spinner>
             </div>
-          </div>
-        } @empty {
-          <div class="text-center py-8 text-gray-500">
-            <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-            <p>Aucun mouvement enregistré</p>
-          </div>
-        }
+          }
+
+          @if (!isLoadingHistory()) {
+            <div class="space-y-3 max-h-[500px] overflow-y-auto">
+              @for (movement of movements(); track movement.id) {
+                <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        [class.bg-green-100]="movement.type === 'in'"
+                        [class.bg-red-100]="movement.type === 'out'"
+                        [class.bg-blue-100]="movement.type === 'adjustment'">
+                        <i class="fas"
+                          [class.fa-arrow-down]="movement.type === 'in'"
+                          [class.text-green-600]="movement.type === 'in'"
+                          [class.fa-arrow-up]="movement.type === 'out'"
+                          [class.text-red-600]="movement.type === 'out'"
+                          [class.fa-sync-alt]="movement.type === 'adjustment'"
+                        [class.text-blue-600]="movement.type === 'adjustment'"></i>
+                      </div>
+                      <div>
+                        <p class="font-medium text-gray-900">{{ getProductName(movement.productId) }}</p>
+                        <p class="text-sm text-gray-500">{{ movement.reason }}</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-bold"
+                        [class.text-green-600]="movement.type === 'in'"
+                        [class.text-red-600]="movement.type === 'out'"
+                        [class.text-blue-600]="movement.type === 'adjustment'">
+                        {{ movement.type === 'in' ? '+' : (movement.type === 'out' ? '-' : '±') }}{{ movement.quantity }}
+                      </p>
+                      <p class="text-xs text-gray-400">{{ formatDate(movement.date) }}</p>
+                    </div>
+                  </div>
+                </div>
+                } @empty {
+                <div class="text-center py-8 text-gray-500">
+                  <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                  <p>Aucun mouvement enregistré</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
-  </div>
-</div>

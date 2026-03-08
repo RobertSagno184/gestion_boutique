@@ -5,213 +5,221 @@
     <div class="search-section">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input 
-          type="text" 
+        <input
+          type="text"
           [(ngModel)]="searchTerm"
           placeholder="Rechercher un produit..."
           class="search-input">
-        <button *ngIf="searchTerm" (click)="searchTerm = ''" class="clear-btn">
-          <i class="fas fa-times"></i>
-        </button>
+          @if (searchTerm) {
+            <button (click)="searchTerm = ''" class="clear-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          }
+        </div>
       </div>
-    </div>
 
-    <!-- Categories -->
-    <div class="categories-section">
-      <button 
-        (click)="selectedCategory.set('all')"
-        [class.active]="selectedCategory() === 'all'"
-        class="category-btn">
-        <i class="fas fa-th-large"></i>
-        Tous
-      </button>
-      @for (cat of categories(); track cat) {
-        <button 
-          (click)="selectedCategory.set(cat)"
-          [class.active]="selectedCategory() === cat"
+      <!-- Categories -->
+      <div class="categories-section">
+        <button
+          (click)="selectedCategory.set('all')"
+          [class.active]="selectedCategory() === 'all'"
           class="category-btn">
-          {{ cat }}
+          <i class="fas fa-th-large"></i>
+          Tous
         </button>
-      }
-    </div>
-
-    <!-- Products Grid -->
-    <div class="products-grid">
-      @for (product of filteredProducts(); track product.id) {
-        <div 
-          class="product-card"
-          [class.out-of-stock]="product.stock === 0"
-          [class.in-cart]="isInCart(product)"
-          (click)="addToCart(product)">
-          <div class="product-icon">
-            <i class="fas fa-box"></i>
-          </div>
-          <div class="product-info">
-            <h4 class="product-name">{{ product.name }}</h4>
-            <p class="product-price">{{ product.price | currencyFormat }}</p>
-          </div>
-          <div class="product-stock" [class.low]="product.stock <= (product.minStock || 5)">
-            <span>{{ product.stock }}</span>
-            <small>{{ product.unit }}</small>
-          </div>
-          <div class="add-indicator">
-            <i class="fas fa-plus"></i>
-          </div>
-        </div>
-      } @empty {
-        <div class="empty-products">
-          <i class="fas fa-search"></i>
-          <p>Aucun produit trouvé</p>
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- Right Panel: Cart -->
-  <div class="cart-panel">
-    <div class="cart-header">
-      <h2><i class="fas fa-shopping-cart"></i> Panier</h2>
-      <button *ngIf="cart().length > 0" (click)="clearCart()" class="clear-cart-btn">
-        <i class="fas fa-trash"></i> Vider
-      </button>
-    </div>
-
-    <!-- Cart Items -->
-    <div class="cart-items">
-      @for (item of cart(); track item.product.id) {
-        <div class="cart-item animate-slide-in">
-          <div class="item-info">
-            <h4>{{ item.product.name }}</h4>
-            <p class="item-price">{{ item.product.price | currencyFormat }} × {{ item.quantity }}</p>
-          </div>
-          <div class="item-controls">
-            <button (click)="decreaseQuantity(item)" class="qty-btn">
-              <i class="fas fa-minus"></i>
-            </button>
-            <span class="qty-display">{{ item.quantity }}</span>
-            <button 
-              (click)="increaseQuantity(item)" 
-              [disabled]="item.quantity >= item.product.stock"
-              class="qty-btn">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-          <div class="item-total">
-            {{ item.total | currencyFormat }}
-          </div>
-          <button (click)="removeFromCart(item)" class="remove-btn">
-            <i class="fas fa-times"></i>
+        @for (cat of categories(); track cat) {
+          <button
+            (click)="selectedCategory.set(cat)"
+            [class.active]="selectedCategory() === cat"
+            class="category-btn">
+            {{ cat }}
           </button>
-        </div>
-      } @empty {
-        <div class="empty-cart">
-          <div class="empty-icon">
-            <i class="fas fa-shopping-basket"></i>
-          </div>
-          <p>Le panier est vide</p>
-          <small>Cliquez sur un produit pour l'ajouter</small>
-        </div>
-      }
-    </div>
-
-    <!-- Customer Info (Collapsible) -->
-    <div class="customer-section" [class.expanded]="showCustomerInfo">
-      <button (click)="showCustomerInfo = !showCustomerInfo" class="customer-toggle">
-        <i class="fas fa-user"></i>
-        <span>{{ customerName || 'Client (optionnel)' }}</span>
-        <i class="fas fa-chevron-down" [class.rotate]="showCustomerInfo"></i>
-      </button>
-      <div class="customer-fields" *ngIf="showCustomerInfo">
-        <input 
-          type="text" 
-          [(ngModel)]="customerName" 
-          placeholder="Nom du client"
-          class="customer-input">
-        <input 
-          type="tel" 
-          [(ngModel)]="customerPhone" 
-          placeholder="Téléphone"
-          class="customer-input">
-      </div>
-    </div>
-
-    <!-- Payment Method -->
-    <div class="payment-section">
-      <label>Mode de paiement</label>
-      <div class="payment-methods">
-        <button 
-          (click)="paymentMethod = 'cash'"
-          [class.active]="paymentMethod === 'cash'"
-          class="payment-btn">
-          <i class="fas fa-money-bill-wave"></i>
-          <span>Espèces</span>
-        </button>
-        <button 
-          (click)="paymentMethod = 'mobile'"
-          [class.active]="paymentMethod === 'mobile'"
-          class="payment-btn">
-          <i class="fas fa-mobile-alt"></i>
-          <span>Mobile</span>
-        </button>
-        <button 
-          (click)="paymentMethod = 'card'"
-          [class.active]="paymentMethod === 'card'"
-          class="payment-btn">
-          <i class="fas fa-credit-card"></i>
-          <span>Carte</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Total & Submit -->
-    <div class="cart-footer">
-      <div class="total-section">
-        <div class="total-row">
-          <span>Articles</span>
-          <span>{{ totalItems() }}</span>
-        </div>
-        <div class="total-row grand-total">
-          <span>TOTAL</span>
-          <span class="total-amount">{{ totalAmount() | currencyFormat }}</span>
-        </div>
-      </div>
-      
-      <button 
-        (click)="submitSale()"
-        [disabled]="cart().length === 0 || isSubmitting()"
-        class="submit-btn">
-        @if (isSubmitting()) {
-          <i class="fas fa-spinner fa-spin"></i>
-          Enregistrement...
-        } @else {
-          <i class="fas fa-check"></i>
-          Valider la vente
         }
-      </button>
-
-      <button (click)="cancel()" class="cancel-btn">
-        <i class="fas fa-arrow-left"></i>
-        Retour
-      </button>
-    </div>
-  </div>
-
-  <!-- Success Modal -->
-  <div class="modal-overlay" *ngIf="showSuccessModal" (click)="closeSuccessModal()">
-    <div class="success-modal" (click)="$event.stopPropagation()">
-      <div class="success-icon">
-        <i class="fas fa-check-circle"></i>
       </div>
-      <h3>Vente enregistrée !</h3>
-      <p class="success-amount">{{ lastSaleAmount | currencyFormat }}</p>
-      <div class="modal-actions">
-        <button (click)="newSale()" class="modal-btn primary">
-          <i class="fas fa-plus"></i> Nouvelle vente
-        </button>
-        <button (click)="goToHistory()" class="modal-btn secondary">
-          <i class="fas fa-list"></i> Voir l'historique
-        </button>
+
+      <!-- Products Grid -->
+      <div class="products-grid">
+        @for (product of filteredProducts(); track product.id) {
+          <div
+            class="product-card"
+            [class.out-of-stock]="product.stock === 0"
+            [class.in-cart]="isInCart(product)"
+            (click)="addToCart(product)">
+            <div class="product-icon">
+              <i class="fas fa-box"></i>
+            </div>
+            <div class="product-info">
+              <h4 class="product-name">{{ product.name }}</h4>
+              <p class="product-price">{{ product.price | currencyFormat }}</p>
+            </div>
+            <div class="product-stock" [class.low]="product.stock <= (product.minStock || 5)">
+              <span>{{ product.stock }}</span>
+              <small>{{ product.unit }}</small>
+            </div>
+            <div class="add-indicator">
+              <i class="fas fa-plus"></i>
+            </div>
+          </div>
+          } @empty {
+          <div class="empty-products">
+            <i class="fas fa-search"></i>
+            <p>Aucun produit trouvé</p>
+          </div>
+        }
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- Right Panel: Cart -->
+    <div class="cart-panel">
+      <div class="cart-header">
+        <h2><i class="fas fa-shopping-cart"></i> Panier</h2>
+        @if (cart().length > 0) {
+          <button (click)="clearCart()" class="clear-cart-btn">
+            <i class="fas fa-trash"></i> Vider
+          </button>
+        }
+      </div>
+
+      <!-- Cart Items -->
+      <div class="cart-items">
+        @for (item of cart(); track item.product.id) {
+          <div class="cart-item animate-slide-in">
+            <div class="item-info">
+              <h4>{{ item.product.name }}</h4>
+              <p class="item-price">{{ item.product.price | currencyFormat }} × {{ item.quantity }}</p>
+            </div>
+            <div class="item-controls">
+              <button (click)="decreaseQuantity(item)" class="qty-btn">
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="qty-display">{{ item.quantity }}</span>
+              <button
+                (click)="increaseQuantity(item)"
+                [disabled]="item.quantity >= item.product.stock"
+                class="qty-btn">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="item-total">
+              {{ item.total | currencyFormat }}
+            </div>
+            <button (click)="removeFromCart(item)" class="remove-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          } @empty {
+          <div class="empty-cart">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-basket"></i>
+            </div>
+            <p>Le panier est vide</p>
+            <small>Cliquez sur un produit pour l'ajouter</small>
+          </div>
+        }
+      </div>
+
+      <!-- Customer Info (Collapsible) -->
+      <div class="customer-section" [class.expanded]="showCustomerInfo">
+        <button (click)="showCustomerInfo = !showCustomerInfo" class="customer-toggle">
+          <i class="fas fa-user"></i>
+          <span>{{ customerName || 'Client (optionnel)' }}</span>
+          <i class="fas fa-chevron-down" [class.rotate]="showCustomerInfo"></i>
+        </button>
+        @if (showCustomerInfo) {
+          <div class="customer-fields">
+            <input
+              type="text"
+              [(ngModel)]="customerName"
+              placeholder="Nom du client"
+              class="customer-input">
+              <input
+                type="tel"
+                [(ngModel)]="customerPhone"
+                placeholder="Téléphone"
+                class="customer-input">
+              </div>
+            }
+          </div>
+
+          <!-- Payment Method -->
+          <div class="payment-section">
+            <label>Mode de paiement</label>
+            <div class="payment-methods">
+              <button
+                (click)="paymentMethod = 'cash'"
+                [class.active]="paymentMethod === 'cash'"
+                class="payment-btn">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Espèces</span>
+              </button>
+              <button
+                (click)="paymentMethod = 'mobile'"
+                [class.active]="paymentMethod === 'mobile'"
+                class="payment-btn">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile</span>
+              </button>
+              <button
+                (click)="paymentMethod = 'card'"
+                [class.active]="paymentMethod === 'card'"
+                class="payment-btn">
+                <i class="fas fa-credit-card"></i>
+                <span>Carte</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Total & Submit -->
+          <div class="cart-footer">
+            <div class="total-section">
+              <div class="total-row">
+                <span>Articles</span>
+                <span>{{ totalItems() }}</span>
+              </div>
+              <div class="total-row grand-total">
+                <span>TOTAL</span>
+                <span class="total-amount">{{ totalAmount() | currencyFormat }}</span>
+              </div>
+            </div>
+
+            <button
+              (click)="submitSale()"
+              [disabled]="cart().length === 0 || isSubmitting()"
+              class="submit-btn">
+              @if (isSubmitting()) {
+                <i class="fas fa-spinner fa-spin"></i>
+                Enregistrement...
+              } @else {
+                <i class="fas fa-check"></i>
+                Valider la vente
+              }
+            </button>
+
+            <button (click)="cancel()" class="cancel-btn">
+              <i class="fas fa-arrow-left"></i>
+              Retour
+            </button>
+          </div>
+        </div>
+
+        <!-- Success Modal -->
+        @if (showSuccessModal) {
+          <div class="modal-overlay" (click)="closeSuccessModal()">
+            <div class="success-modal" (click)="$event.stopPropagation()">
+              <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <h3>Vente enregistrée !</h3>
+              <p class="success-amount">{{ lastSaleAmount | currencyFormat }}</p>
+              <div class="modal-actions">
+                <button (click)="newSale()" class="modal-btn primary">
+                  <i class="fas fa-plus"></i> Nouvelle vente
+                </button>
+                <button (click)="goToHistory()" class="modal-btn secondary">
+                  <i class="fas fa-list"></i> Voir l'historique
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>

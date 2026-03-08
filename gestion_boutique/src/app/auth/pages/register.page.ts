@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/firebase/auth.service';
@@ -8,7 +8,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/ui/loading-spin
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingSpinnerComponent],
+  imports: [ReactiveFormsModule, RouterModule, LoadingSpinnerComponent],
   templateUrl: './register.page.html',
   styleUrl: './register.page.scss'
 })

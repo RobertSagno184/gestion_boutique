@@ -1,18 +1,20 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-loading-spinner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div [class]="containerClasses">
-      <div class="animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" 
-           [style.width.px]="size" 
-           [style.height.px]="size"></div>
-      <p *ngIf="message" class="mt-4 text-gray-600">{{ message }}</p>
+      <div class="animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
+        [style.width.px]="size"
+      [style.height.px]="size"></div>
+      @if (message) {
+        <p class="mt-4 text-gray-600">{{ message }}</p>
+      }
     </div>
-  `,
+    `,
   styles: []
 })
 export class LoadingSpinnerComponent {

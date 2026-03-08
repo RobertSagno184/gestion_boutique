@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExpensesService } from '@core/services/expenses.service';
@@ -8,7 +8,7 @@ import { PAYMENT_METHODS_EXPENSE } from '@core/models/expense.model';
 @Component({
   selector: 'app-new-expense',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './new-expense.page.html',
   styleUrl: './new-expense.page.scss'
 })
