@@ -13,7 +13,9 @@ import {
   limit,
   Timestamp,
   QueryConstraint,
-  addDoc
+  addDoc,
+  runTransaction,
+  Transaction
 } from 'firebase/firestore';
 import { getFirebaseFirestore } from './firebase.config';
 
@@ -53,8 +55,9 @@ export class FirestoreService {
     collectionName: string, 
     data: Omit<T, 'id'>
   ): Promise<string> {
+    const cleanedData = this.cleanUndefinedFields(data);
     const collectionRef = collection(this.firestore, collectionName);
-    const docRef = await addDoc(collectionRef, this.convertToFirestoreData(data));
+    const docRef = await addDoc(collectionRef, this.convertToFirestoreData(cleanedData));
     return docRef.id;
   }
 
@@ -63,13 +66,46 @@ export class FirestoreService {
     docId: string, 
     data: Partial<T>
   ): Promise<void> {
+    const cleanedData = this.cleanUndefinedFields(data);
     const docRef = doc(this.firestore, collectionName, docId);
-    await updateDoc(docRef, this.convertToFirestoreData(data));
+    await updateDoc(docRef, this.convertToFirestoreData(cleanedData));
   }
 
   async deleteDocument(collectionName: string, docId: string): Promise<void> {
     const docRef = doc(this.firestore, collectionName, docId);
     await deleteDoc(docRef);
+  }
+
+  /**
+   * Exécute une transaction Firestore de manière sécurisée
+   */
+  async runTransaction<T>(updateFunction: (transaction: Transaction) => Promise<T>): Promise<T> {
+    return await runTransaction(this.firestore, updateFunction);
+  }
+
+  /**
+   * Récupère une référence de document pour les transactions
+   */
+  getDocRef(collectionName: string, docId: string) {
+    return doc(this.firestore, collectionName, docId);
+  }
+
+  // Nettoyage des champs undefined pour éviter les erreurs Firebase
+  private cleanUndefinedFields(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(v => (v && typeof v === 'object' ? this.cleanUndefinedFields(v) : v));
+    }
+
+    const res: any = {};
+    Object.keys(obj).forEach(key => {
+      const value = obj[key];
+      if (value !== undefined) {
+        res[key] = (value && typeof value === 'object' && !(value instanceof Date) && !(value instanceof Timestamp))
+          ? this.cleanUndefinedFields(value)
+          : value;
+      }
+    });
+    return res;
   }
 
   // Helper methods for date conversion

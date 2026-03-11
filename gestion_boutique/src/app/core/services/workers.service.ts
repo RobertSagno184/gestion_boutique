@@ -17,8 +17,12 @@ export class WorkersService {
   ) {}
 
   async loadWorkers(): Promise<void> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return;
+
     const workers = await this.firestore.getCollection<Worker>(
       'workers',
+      where('userId', '==', userId),
       where('isActive', '==', true),
       orderBy('lastName', 'asc')
     );
@@ -26,12 +30,21 @@ export class WorkersService {
   }
 
   async getWorker(workerId: string): Promise<Worker | null> {
-    return await this.firestore.getDocument<Worker>('workers', workerId);
+    const worker = await this.firestore.getDocument<Worker>('workers', workerId);
+    const userId = this.auth.currentUser()?.uid;
+    if (worker && worker.userId !== userId) {
+      return null;
+    }
+    return worker;
   }
 
-  async createWorker(worker: Omit<Worker, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async createWorker(worker: Omit<Worker, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<string> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) throw new Error('User not authenticated');
+
     const workerData: Omit<Worker, 'id'> = {
       ...worker,
+      userId,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -54,9 +67,13 @@ export class WorkersService {
   }
 
   // Tasks management
-  async createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<string> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) throw new Error('User not authenticated');
+
     const taskData: Omit<Task, 'id'> = {
       ...task,
+      userId,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -65,7 +82,13 @@ export class WorkersService {
   }
 
   async getTasks(workerId?: string): Promise<Task[]> {
-    const constraints: any[] = [orderBy('createdAt', 'desc')];
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    ];
     
     if (workerId) {
       constraints.push(where('workerId', '==', workerId));
@@ -82,7 +105,7 @@ export class WorkersService {
   }
 
   // Payments management
-  async createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Promise<string> {
+  async createPayment(payment: Omit<Payment, 'id' | 'createdAt' | 'userId'>): Promise<string> {
     const userId = this.auth.currentUser()?.uid;
     if (!userId) throw new Error('User not authenticated');
 
@@ -96,7 +119,13 @@ export class WorkersService {
   }
 
   async getPayments(workerId?: string): Promise<Payment[]> {
-    const constraints: any[] = [orderBy('paymentDate', 'desc')];
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      orderBy('paymentDate', 'desc')
+    ];
     
     if (workerId) {
       constraints.push(where('workerId', '==', workerId));

@@ -1,5 +1,6 @@
 export interface Worker {
   id?: string;
+  userId: string;
   firstName: string;
   lastName: string;
   email?: string;
@@ -15,6 +16,7 @@ export interface Worker {
 
 export interface Task {
   id?: string;
+  userId: string;
   workerId: string;
   title: string;
   description?: string;

@@ -72,11 +72,22 @@ export class TransactionsService {
   }
 
   async getSale(saleId: string): Promise<Sale | null> {
-    return await this.firestore.getDocument<Sale>('sales', saleId);
+    const sale = await this.firestore.getDocument<Sale>('sales', saleId);
+    const userId = this.auth.currentUser()?.uid;
+    if (sale && sale.userId !== userId) {
+      return null;
+    }
+    return sale;
   }
 
   async getSales(startDate?: Date, endDate?: Date): Promise<Sale[]> {
-    const constraints: any[] = [orderBy('date', 'desc')];
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      orderBy('date', 'desc')
+    ];
     
     if (startDate) {
       constraints.push(where('date', '>=', Timestamp.fromDate(startDate)));
@@ -116,33 +127,12 @@ export class TransactionsService {
     const userId = this.auth.currentUser()?.uid;
     if (!userId) return [];
 
-    // Solution temporaire : récupérer toutes les transactions de l'utilisateur et filtrer en mémoire
-    // pour éviter l'erreur d'index. Une fois l'index créé dans Firebase, on pourra utiliser la requête optimisée.
-    const allTransactions = await this.firestore.getCollection<Transaction>(
+    return await this.firestore.getCollection<Transaction>(
       'transactions',
       where('userId', '==', userId),
+      where('date', '>=', Timestamp.fromDate(startDate)),
+      where('date', '<=', Timestamp.fromDate(endDate)),
       orderBy('date', 'desc')
     );
-
-    // Filtrer par date en mémoire
-    const startTimestamp = Timestamp.fromDate(startDate);
-    const endTimestamp = Timestamp.fromDate(endDate);
-    
-    return allTransactions.filter(transaction => {
-      // Convertir la date de la transaction en Timestamp
-      let transactionTimestamp: Timestamp;
-      
-      if (transaction.date instanceof Date) {
-        transactionTimestamp = Timestamp.fromDate(transaction.date);
-      } else if (transaction.date && typeof (transaction.date as any).toDate === 'function') {
-        // C'est un Timestamp Firestore
-        transactionTimestamp = transaction.date as any as Timestamp;
-      } else {
-        // Fallback : convertir en Date puis en Timestamp
-        transactionTimestamp = Timestamp.fromDate(new Date(transaction.date));
-      }
-      
-      return transactionTimestamp >= startTimestamp && transactionTimestamp <= endTimestamp;
-    });
   }
 }

@@ -22,13 +22,19 @@ export class ExpensesService {
 
     const expenses = await this.firestore.getCollection<Expense>(
       'expenses',
+      where('userId', '==', userId),
       orderBy('date', 'desc')
     );
     this.expenses.set(expenses);
   }
 
   async getExpense(expenseId: string): Promise<Expense | null> {
-    return await this.firestore.getDocument<Expense>('expenses', expenseId);
+    const expense = await this.firestore.getDocument<Expense>('expenses', expenseId);
+    const userId = this.auth.currentUser()?.uid;
+    if (expense && expense.userId !== userId) {
+      return null;
+    }
+    return expense;
   }
 
   async createExpense(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<string> {
@@ -61,32 +67,25 @@ export class ExpensesService {
   }
 
   async getExpensesByDateRange(startDate: Date, endDate: Date): Promise<Expense[]> {
-    const allExpenses = await this.firestore.getCollection<Expense>(
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
+    return await this.firestore.getCollection<Expense>(
       'expenses',
+      where('userId', '==', userId),
+      where('date', '>=', Timestamp.fromDate(startDate)),
+      where('date', '<=', Timestamp.fromDate(endDate)),
       orderBy('date', 'desc')
     );
-
-    const startTimestamp = Timestamp.fromDate(startDate);
-    const endTimestamp = Timestamp.fromDate(endDate);
-
-    return allExpenses.filter(expense => {
-      let expenseTimestamp: Timestamp;
-      
-      if (expense.date instanceof Date) {
-        expenseTimestamp = Timestamp.fromDate(expense.date);
-      } else if (expense.date && typeof (expense.date as any).toDate === 'function') {
-        expenseTimestamp = expense.date as any as Timestamp;
-      } else {
-        expenseTimestamp = Timestamp.fromDate(new Date(expense.date));
-      }
-      
-      return expenseTimestamp >= startTimestamp && expenseTimestamp <= endTimestamp;
-    });
   }
 
   async getExpensesByCategory(category: ExpenseCategory): Promise<Expense[]> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
     return await this.firestore.getCollection<Expense>(
       'expenses',
+      where('userId', '==', userId),
       where('category', '==', category),
       orderBy('date', 'desc')
     );
@@ -113,8 +112,12 @@ export class ExpensesService {
   }
 
   async getWorkerPayments(workerId: string): Promise<Expense[]> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
     return await this.firestore.getCollection<Expense>(
       'expenses',
+      where('userId', '==', userId),
       where('workerId', '==', workerId),
       orderBy('date', 'desc')
     );

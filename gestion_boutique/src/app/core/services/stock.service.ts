@@ -17,8 +17,12 @@ export class StockService {
   ) {}
 
   async loadProducts(): Promise<void> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return;
+
     const products = await this.firestore.getCollection<Product>(
       'products',
+      where('userId', '==', userId),
       where('isActive', '==', true),
       orderBy('name', 'asc')
     );
@@ -26,12 +30,23 @@ export class StockService {
   }
 
   async getProduct(productId: string): Promise<Product | null> {
-    return await this.firestore.getDocument<Product>('products', productId);
+    const product = await this.firestore.getDocument<Product>('products', productId);
+    const userId = this.auth.currentUser()?.uid;
+    
+    // Sécurité: vérifier si le produit appartient à l'utilisateur
+    if (product && product.userId !== userId) {
+      return null;
+    }
+    return product;
   }
 
-  async createProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async createProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<string> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) throw new Error('Utilisateur non authentifié');
+
     const productData: Omit<Product, 'id'> = {
       ...product,
+      userId,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -50,51 +65,77 @@ export class StockService {
   }
 
   async decreaseStock(productId: string, quantity: number, reason: string): Promise<void> {
-    const product = await this.getProduct(productId);
-    if (!product) throw new Error('Product not found');
-
-    const newStock = product.stock - quantity;
-    if (newStock < 0) {
-      throw new Error('Stock insuffisant');
-    }
-
-    await this.updateProduct(productId, { stock: newStock });
-
-    // Enregistrer le mouvement de stock
-    const userId = this.auth.currentUser()?.uid || 'anonymous';
-    await this.firestore.createDocument<StockMovement>('stockMovements', {
-      productId,
-      type: 'out',
-      quantity,
-      reason,
-      date: new Date(),
-      userId,
-      createdAt: new Date()
-    });
+    await this.updateStockWithTransaction(productId, -quantity, reason, 'out');
   }
 
   async increaseStock(productId: string, quantity: number, reason: string): Promise<void> {
-    const product = await this.getProduct(productId);
-    if (!product) throw new Error('Product not found');
+    await this.updateStockWithTransaction(productId, quantity, reason, 'in');
+  }
 
-    const newStock = product.stock + quantity;
-    await this.updateProduct(productId, { stock: newStock });
+  /**
+   * Met à jour le stock de manière atomique à l'aide d'une transaction
+   */
+  private async updateStockWithTransaction(
+    productId: string, 
+    quantityChange: number, 
+    reason: string, 
+    type: 'in' | 'out' | 'adjustment'
+  ): Promise<void> {
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) throw new Error('Utilisateur non authentifié');
 
-    // Enregistrer le mouvement de stock
-    const userId = this.auth.currentUser()?.uid || 'anonymous';
-    await this.firestore.createDocument<StockMovement>('stockMovements', {
-      productId,
-      type: 'in',
-      quantity,
-      reason,
-      date: new Date(),
-      userId,
-      createdAt: new Date()
-    });
+    const productRef = this.firestore.getDocRef('products', productId);
+
+    try {
+      await this.firestore.runTransaction(async (transaction) => {
+        const productDoc = await transaction.get(productRef);
+        if (!productDoc.exists()) {
+          throw new Error('Produit non trouvé');
+        }
+
+        const productData = productDoc.data() as Product;
+        
+        // Vérification de sécurité pour le débit
+        if (quantityChange < 0 && productData.stock + quantityChange < 0) {
+          throw new Error('Stock insuffisant');
+        }
+
+        const newStock = productData.stock + quantityChange;
+
+        // 1. Mettre à jour le produit
+        transaction.update(productRef, {
+          stock: newStock,
+          updatedAt: new Date()
+        });
+
+        // 2. Créer le mouvement de stock
+        const movementId = crypto.randomUUID().replace(/-/g, '').substring(0, 20);
+        const movementRef = this.firestore.getDocRef('stockMovements', movementId);
+        const movementData: any = {
+          productId,
+          type,
+          quantity: Math.abs(quantityChange),
+          reason,
+          date: new Date(),
+          userId,
+          createdAt: new Date()
+        };
+        
+        transaction.set(movementRef, movementData);
+      });
+
+      await this.loadProducts();
+    } catch (error) {
+      console.error('Erreur lors de la transaction de stock:', error);
+      throw error;
+    }
   }
 
   async getLowStockProducts(): Promise<Product[]> {
-    const products = await this.loadProducts();
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+    
+    // On réutilise les produits déjà chargés dans le signal pour éviter une requête
     return this.products().filter(p => {
       const minStock = p.minStock || 0;
       return p.stock <= minStock;
@@ -102,7 +143,13 @@ export class StockService {
   }
 
   async getStockMovements(productId?: string): Promise<StockMovement[]> {
-    const constraints: any[] = [orderBy('date', 'desc')];
+    const userId = this.auth.currentUser()?.uid;
+    if (!userId) return [];
+
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      orderBy('date', 'desc')
+    ];
     
     if (productId) {
       constraints.push(where('productId', '==', productId));
